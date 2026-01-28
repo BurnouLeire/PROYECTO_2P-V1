@@ -1,8 +1,7 @@
-
 import { Entity, Column, PrimaryColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { Proveedor } from './proveedor.entity';
 
-@Entity('SGI_PRODUCTOS', { schema: 'AIN_GRUPO13' })
+@Entity('SGI_PRODUCTOS')
 export class Producto {
   @PrimaryColumn({ name: 'IDPRODUCTOS', length: 50 })
   IDPRODUCTOS: string;

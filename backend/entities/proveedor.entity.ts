@@ -1,7 +1,6 @@
-
 import { Entity, Column, PrimaryColumn } from 'typeorm';
 
-@Entity('SGI_PROVEEDORES', { schema: 'AIN_GRUPO13' })
+@Entity('SGI_PROVEEDORES')
 export class Proveedor {
   @PrimaryColumn({ name: 'IDPROVEEDORES', length: 50 })
   IDPROVEEDORES: string;
@@ -12,6 +11,7 @@ export class Proveedor {
   @Column({ name: 'DIR_PROVEEDOR', length: 200, nullable: true })
   DIR_PROVEEDOR: string;
 
-  @Column({ name: 'TEL_PROVEEDOR', type: 'number', precision: 15, nullable: true })
+  // ✅ CORREGIDO: Eliminamos type: 'number'
+  @Column({ name: 'TEL_PROVEEDOR', nullable: true })
   TEL_PROVEEDOR: number;
 }

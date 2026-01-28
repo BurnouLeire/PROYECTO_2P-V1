@@ -1,7 +1,6 @@
-
 import { Entity, Column, PrimaryColumn, CreateDateColumn } from 'typeorm';
 
-@Entity('SGI_USUARIOS', { schema: 'AIN_GRUPO13' })
+@Entity('SGI_USUARIOS')
 export class Usuario {
   @PrimaryColumn({ name: 'IDUSUARIO', length: 36 })
   ID: string;

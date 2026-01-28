@@ -3,7 +3,7 @@ import { Injectable, UnauthorizedException, ConflictException, OnModuleInit } fr
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { Usuario } from '../entities/usuario.entity';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
