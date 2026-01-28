@@ -1,0 +1,5 @@
+{
+  "name": "SincroERP - Sistema Transaccional Empresarial",
+  "description": "Un robusto sistema ERP desarrollado con React y Tailwind para la gestión de clientes, proveedores, productos, facturaciones y pedidos, con control de acceso por roles y auditoría transaccional.",
+  "requestFramePermissions": []
+}
