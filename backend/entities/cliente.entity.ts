@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryColumn } from 'typeorm';
 
-@Entity('SGI_CLIENTES') // Quitamos el schema para evitar líos en SQLite
+@Entity('SGI_CLIENTES') 
 export class Cliente {
   @PrimaryColumn({ name: 'IDCLIENTE', length: 50 })
   IDCLIENTE: string;

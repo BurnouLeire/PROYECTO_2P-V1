@@ -1,4 +1,3 @@
-
 import { Module, OnModuleInit } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { databaseConfig } from './config/database.config';
@@ -25,11 +24,14 @@ export class AppModule implements OnModuleInit {
   constructor(private dataSource: DataSource) {}
 
   onModuleInit() {
+    const dbType = this.dataSource.driver.database;
+    
     if (this.dataSource.isInitialized) {
-      console.log('✅ [DATABASE] Conexión establecida con éxito a Oracle (108.181.157.248:10011)');
-      console.log('📂 [SCHEMA] Trabajando sobre el esquema: AIN_GRUPO13');
+      console.log('✅ [DATABASE] Conexión establecida exitosamente');
+      console.log(`📂 [CONFIG] Base de datos: ${dbType || 'SQLite'}`);
+      console.log('🚀 Servidor listo para recibir peticiones');
     } else {
-      console.error('❌ [DATABASE] Error crítico: No se pudo conectar a la base de datos Oracle.');
+      console.error('❌ [DATABASE] Error crítico: No se pudo conectar a la base de datos');
     }
   }
 }
