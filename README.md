@@ -1,4 +1,4 @@
-# 📝 SincroERP - Sistema de Gestión de Inventario
+# 📝 Sistema de Gestión de Inventario
 
 **SincroERP** es una solución integral para la gestión de inventarios, desarrollada como proyecto académico. El sistema utiliza una arquitectura desacoplada con un backend en **NestJS** y un frontend en **React**.
 
