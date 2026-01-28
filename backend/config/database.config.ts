@@ -12,7 +12,7 @@ export const databaseConfig: TypeOrmModuleOptions = {
   // basándose en tus archivos .entity.ts
   synchronize: true, 
   
-  logging: ['query', 'error'],
+  logging: false,
   
   // SQLite no usa pools de Oracle ni SIDs, así que simplificamos
 };

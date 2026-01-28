@@ -1,4 +1,3 @@
-
 import { Controller, Post, Body, Get, Delete, Param, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 
@@ -15,7 +14,12 @@ export class AuthController {
 
   @Get('users')
   async getUsers() {
-    return this.authService.findAll();
+    const users = await this.authService.findAll();
+    // Remover PASSWORD_HASH antes de retornar
+    return users.map(u => {
+      const { PASSWORD_HASH, ...user } = u;
+      return user;
+    });
   }
 
   @Post('users')
@@ -28,8 +32,14 @@ export class AuthController {
     return this.authService.remove(id);
   }
 
-  @Post('seed')
-  async seed() {
-    return this.authService.seedAdmin();
+  @Get('status')
+  async getStatus() {
+    const users = await this.authService.findAll();
+    return {
+      status: '✅ OK',
+      database: 'SQLite',
+      totalUsers: users.length,
+      message: 'Base de datos conectada correctamente'
+    };
   }
 }
