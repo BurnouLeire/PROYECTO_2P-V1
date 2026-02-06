@@ -1,20 +1,49 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# 📝 Sistema de Gestión de Inventario
 
-# Run and deploy your AI Studio app
+Solución integral para la gestión de inventarios, desarrollada como proyecto académico. El sistema utiliza una arquitectura desacoplada con un backend en **NestJS** y un frontend en **React**.
 
-This contains everything you need to run your app locally.
+---
 
-View your app in AI Studio: https://ai.studio/apps/drive/1RX5zdoeJz6c58wOkSec0PBcDyIVSr_an
+## 🚀 Características Principales
+- **Gestión de Productos**: Control de stock y vinculación con proveedores.
+- **Módulo de Facturación**: Registro de ventas y cálculos automáticos.
+- **Seguridad**: Autenticación con JWT y Roles (Admin/User).
 
-## Run Locally
+---
 
-**Prerequisites:**  Node.js
+## 🛠️ Stack Tecnológico
 
+### Backend (NestJS)
+- **Base de Datos**: SQLite (Portabilidad total).
+- **ORM**: TypeORM.
+- **Seguridad**: BcryptJS.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+### Frontend (React)
+- **UI**: Tailwind CSS & Lucide Icons.
+- **Lenguaje**: TypeScript.
+
+---
+
+## 📂 Estructura del Proyecto
+
+*   `/backend`: Carpeta del servidor NestJS.
+*   `/src`: Carpeta del frontend React.
+*   `database.sqlite`: Base de datos auto-generada.
+
+---
+
+## ⚙️ Instrucciones de Ejecución
+
+### Backend
+1. Entrar a la carpeta: `cd backend`
+2. Instalar: `npm install`
+3. Ejecutar: `npm run start:dev`
+
+### Frontend
+1. En la raíz, instalar: `npm install`
+2. Ejecutar: `npm run dev`
+
+---
+
+**Desarrollado por:** Grupo 13  
+**Proyecto Universitario - 2026**
