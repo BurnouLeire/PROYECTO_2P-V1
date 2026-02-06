@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { api } from '../api';
 import { User, Role } from '../types';
@@ -32,9 +31,9 @@ export default function UsersView() {
       render: (u: User) => (
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-600">
-            {u.USERNAME[0].toUpperCase()}
+            {u.USERNAME ? u.USERNAME[0].toUpperCase() : '?'}
           </div>
-          <span className="font-semibold">{u.USERNAME}</span>
+          <span className="font-semibold">{u.USERNAME || 'N/A'}</span>
         </div>
       )
     },
@@ -43,9 +42,9 @@ export default function UsersView() {
       key: 'ROLE', 
       render: (u: User) => (
         <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-          u.ROLE === Role.ADMIN ? 'bg-indigo-100 text-indigo-700' : 'bg-emerald-100 text-emerald-700'
+          u.ROLE === 'ADMIN' ? 'bg-indigo-100 text-indigo-700' : 'bg-emerald-100 text-emerald-700'
         }`}>
-          {u.ROLE}
+          {u.ROLE || 'USER'}
         </span>
       )
     },
@@ -54,8 +53,8 @@ export default function UsersView() {
       key: 'ESTADO',
       render: (u: User) => (
         <div className="flex items-center gap-1.5">
-          <div className={`w-2 h-2 rounded-full ${u.ESTADO === 'ACTIVO' ? 'bg-emerald-500' : 'bg-rose-500'}`}></div>
-          <span className="text-xs">{u.ESTADO}</span>
+          <div className={`w-2 h-2 rounded-full ${u.ESTADO === 1 ? 'bg-emerald-500' : 'bg-rose-500'}`}></div>
+          <span className="text-xs">{u.ESTADO === 1 ? 'ACTIVO' : 'INACTIVO'}</span>
         </div>
       )
     },
@@ -70,24 +69,24 @@ export default function UsersView() {
     }
   ];
 
-  // Configuración de campos cumpliendo requerimientos: Text, Radio, Select, TextArea
+  // Configuración de campos - TODOS EN MAYÚSCULAS para coincidir con el BD
   const fields: FieldConfig[] = [
     { 
-      name: 'username', 
+      name: 'USERNAME',
       label: 'Nombre de Acceso (TextField)', 
       type: 'text', 
       required: true,
       placeholder: 'ej. juan.perez'
     },
     { 
-      name: 'password', 
+      name: 'PASSWORD',
       label: 'Contraseña de Seguridad (TextField)', 
-      type: 'text', 
+      type: 'password',
       required: true,
       placeholder: 'Mínimo 8 caracteres'
     },
     { 
-      name: 'role', 
+      name: 'ROLE',
       label: 'Nivel de Acceso (RadioButtons)', 
       type: 'radio', 
       options: [
@@ -97,7 +96,7 @@ export default function UsersView() {
       required: true 
     },
     { 
-      name: 'estado', 
+      name: 'ESTADO',
       label: 'Estado de Cuenta (Select)', 
       type: 'select', 
       options: [
@@ -107,7 +106,7 @@ export default function UsersView() {
       required: true 
     },
     { 
-      name: 'notas', 
+      name: 'NOTAS',
       label: 'Descripción o Perfil del Usuario (TextArea)', 
       type: 'textarea',
       placeholder: 'Indique el departamento o motivo de creación...'
@@ -125,7 +124,7 @@ export default function UsersView() {
   };
 
   const handleDelete = async (u: User) => {
-    if (u.USERNAME === 'admin') return alert('No se puede eliminar el administrador maestro.');
+    if (u.USERNAME === 'ADMIN') return alert('No se puede eliminar el administrador maestro.');
     if (confirm(`¿Está seguro de revocar permanentemente el acceso a "${u.USERNAME}"?`)) {
       try {
         await api.delete('auth/users', u.ID);

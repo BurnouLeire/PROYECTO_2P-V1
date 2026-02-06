@@ -1,14 +1,14 @@
-
 import React, { useState, useEffect } from 'react';
 import { X, Save, AlertCircle } from 'lucide-react';
 
 export interface FieldConfig {
   name: string;
   label: string;
-  type: 'text' | 'number' | 'date' | 'textarea' | 'radio' | 'select';
-  options?: { label: string; value: string }[];
+  type: 'text' | 'number' | 'date' | 'textarea' | 'radio' | 'select' | 'password';
+  options?: { label: string; value: string | number }[];
   placeholder?: string;
   required?: boolean;
+  hidden?: boolean;
 }
 
 interface CrudFormProps {
@@ -27,11 +27,12 @@ export default function CrudForm({ title, fields, initialData, onSubmit, onCance
     if (initialData) {
       setFormData(initialData);
     } else {
-      const defaultValues = fields.reduce((acc, f) => {
-        acc[f.name] = f.type === 'number' ? 0 : '';
+      const defaults = fields.reduce((acc, f) => {
+        // Establecer primer valor por defecto para select y radio si son requeridos
+        acc[f.name] = (f.type === 'select' || f.type === 'radio') && f.options ? f.options[0].value : '';
         return acc;
       }, {} as any);
-      setFormData(defaultValues);
+      setFormData(defaults);
     }
   }, [initialData, fields]);
 
@@ -39,113 +40,99 @@ export default function CrudForm({ title, fields, initialData, onSubmit, onCance
     const { name, value, type } = e.target;
     setFormData((prev: any) => ({
       ...prev,
-      [name]: type === 'number' ? parseFloat(value) : value
+      [name]: type === 'number' ? Number(value) : value
     }));
+  };
+
+  const renderField = (field: FieldConfig) => {
+    const commonProps = {
+      name: field.name,
+      value: formData[field.name] || '',
+      onChange: handleChange,
+      required: field.required,
+      placeholder: field.placeholder,
+      className: "w-full border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+    };
+
+    switch (field.type) {
+      case 'textarea':
+        return <textarea {...commonProps} rows={3} />;
+      
+      case 'select':
+        return (
+          <select {...commonProps}>
+            <option value="">Seleccione una opción...</option>
+            {field.options?.map(opt => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+        );
+
+      case 'radio':
+        return (
+          <div className="space-y-2 pt-1">
+            {field.options?.map(opt => (
+              <label key={opt.value} className="flex items-center gap-2 cursor-pointer group">
+                <input
+                  type="radio"
+                  name={field.name}
+                  value={opt.value}
+                  checked={formData[field.name] === opt.value}
+                  onChange={handleChange}
+                  className="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
+                />
+                <span className="text-sm text-slate-700 group-hover:text-indigo-600">{opt.label}</span>
+              </label>
+            ))}
+          </div>
+        );
+
+      default:
+        return <input type={field.type} {...commonProps} />;
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const missing = fields
-      .filter(f => f.required && !formData[f.name])
-      .map(f => f.label);
-    
+    const missing = fields.filter(f => f.required && !f.hidden && !formData[f.name]).map(f => f.label);
     if (missing.length > 0) {
-      setErrors([`Los siguientes campos son requeridos: ${missing.join(', ')}`]);
+      setErrors([`Campos requeridos: ${missing.join(', ')}`]);
       return;
     }
-
     onSubmit(formData);
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
-        <div className="px-6 py-4 bg-indigo-600 flex items-center justify-between text-white">
-          <h3 className="text-lg font-bold">{title}</h3>
-          <button onClick={onCancel} className="p-1 hover:bg-indigo-500 rounded-full transition-colors">
-            <X size={20} />
-          </button>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+      <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in duration-200">
+        <div className="flex justify-between items-center p-4 bg-indigo-600 text-white">
+          <h3 className="font-bold text-lg">{title}</h3>
+          <button onClick={onCancel} className="hover:bg-white/20 p-1 rounded-full transition-colors"><X size={20}/></button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6">
+        <form onSubmit={handleSubmit} className="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
           {errors.length > 0 && (
-            <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3 text-red-700 text-sm">
-              <AlertCircle size={18} className="shrink-0 mt-0.5" />
-              <div>{errors.map((e, i) => <p key={i}>{e}</p>)}</div>
+            <div className="bg-red-50 text-red-700 p-3 rounded-lg flex gap-2 items-center text-sm border border-red-100">
+              <AlertCircle size={18} /> {errors[0]}
             </div>
           )}
 
-          <div className="grid grid-cols-1 gap-5">
-            {fields.map((field) => (
-              <div key={field.name}>
-                <label className="block text-sm font-bold text-slate-700 mb-1.5 ml-0.5">
-                  {field.label} {field.required && <span className="text-red-500">*</span>}
-                </label>
-                
-                {field.type === 'textarea' ? (
-                  <textarea
-                    name={field.name}
-                    value={formData[field.name] || ''}
-                    onChange={handleChange}
-                    placeholder={field.placeholder}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all h-24 resize-none"
-                  />
-                ) : field.type === 'radio' ? (
-                  <div className="flex gap-4 mt-1">
-                    {field.options?.map(opt => (
-                      <label key={opt.value} className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="radio"
-                          name={field.name}
-                          value={opt.value}
-                          checked={formData[field.name] === opt.value}
-                          onChange={handleChange}
-                          className="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
-                        />
-                        <span className="text-sm text-slate-600">{opt.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                ) : field.type === 'select' ? (
-                  <select
-                    name={field.name}
-                    value={formData[field.name] || ''}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
-                  >
-                    <option value="">Seleccione una opción</option>
-                    {field.options?.map(opt => (
-                      <option key={opt.value} value={opt.value}>{opt.label}</option>
-                    ))}
-                  </select>
-                ) : (
-                  <input
-                    type={field.type}
-                    name={field.name}
-                    value={formData[field.name] || ''}
-                    onChange={handleChange}
-                    placeholder={field.placeholder}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
-                  />
-                )}
-              </div>
-            ))}
-          </div>
+          {fields.map(field => !field.hidden && (
+            <div key={field.name} className="space-y-1.5">
+              <label className="text-sm font-bold text-slate-700 flex items-center gap-1">
+                {field.label}
+                {field.required && <span className="text-red-500">*</span>}
+              </label>
+              {renderField(field)}
+            </div>
+          ))}
 
-          <div className="mt-8 flex gap-3">
-            <button
-              type="button"
-              onClick={onCancel}
-              className="flex-1 px-4 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors"
-            >
+          <div className="flex gap-3 pt-4 border-t">
+            <button type="button" onClick={onCancel} className="flex-1 px-4 py-2.5 border border-slate-200 text-slate-600 font-semibold rounded-xl hover:bg-slate-50 transition-colors">
               Cancelar
             </button>
-            <button
-              type="submit"
-              className="flex-1 px-4 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-100 flex items-center justify-center gap-2 transition-all active:scale-95"
-            >
-              <Save size={18} />
-              Guardar Cambios
+            <button type="submit" className="flex-1 px-4 py-2.5 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-200 flex items-center justify-center gap-2 transition-all">
+              <Save size={18} /> Guardar Registro
             </button>
           </div>
         </form>

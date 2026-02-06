@@ -1,9 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { api } from '../api';
 import { Cliente } from '../types';
 import CrudTable from '../components/CrudTable';
 import CrudForm, { FieldConfig } from '../components/CrudForm';
+import PaginationControls from '../components/PaginationControls';
+import { usePagination } from '../hooks/usePagination';
 import { Loader2, AlertTriangle } from 'lucide-react';
 
 export default function ClientesView() {
@@ -13,14 +14,17 @@ export default function ClientesView() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const pagination = usePagination(data, 20);
+
   const loadData = async () => {
     try {
       setLoading(true);
       const result = await api.get<Cliente[]>('clientes');
       setData(result);
       setError(null);
+      pagination.goToPage(1);
     } catch (err) {
-      setError('⚠️ Servidor NestJS Offline. Inicie el backend en el puerto 4000 (npm run start:dev).');
+      setError('⚠️ Servidor NestJS Offline. Inicie el backend en el puerto 4001 (npm run start:dev).');
     } finally {
       setLoading(false);
     }
@@ -39,11 +43,11 @@ export default function ClientesView() {
   ];
 
   const fields: FieldConfig[] = [
-    { name: 'IDCLIENTE', label: 'ID Cliente (Oracle PK)', type: 'text', required: true },
+    { name: 'IDCLIENTE', label: 'ID Cliente', type: 'text', hidden: true }, // ← Hidden, auto-generado
     { name: 'NOM_CLIEN', label: 'Nombre Cliente', type: 'text', required: true },
     { name: 'APEL_CLIEN', label: 'Apellido Cliente', type: 'text', required: true },
     { name: 'DIR_CLIEN', label: 'Dirección Residencia', type: 'textarea' },
-    { name: 'TEL_CLIEN', label: 'Teléfono (Number)', type: 'number', required: true },
+    { name: 'TEL_CLIEN', label: 'Teléfono', type: 'number', required: true },
   ];
 
   const handleSave = async (item: Cliente) => {
@@ -79,9 +83,9 @@ export default function ClientesView() {
   );
 
   return (
-    <div className="p-8">
+    <div className="p-8 space-y-6">
       {error && (
-        <div className="mb-6 p-4 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-3 text-rose-700 animate-in fade-in">
+        <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-3 text-rose-700 animate-in fade-in">
           <AlertTriangle size={20} />
           <p className="text-sm font-medium">{error}</p>
         </div>
@@ -90,16 +94,29 @@ export default function ClientesView() {
       <CrudTable
         title="Maestro de Clientes (Real DB)"
         subtitle="Conexión en vivo con AIN_GRUPO13.CLIENTES"
-        data={data}
+        data={pagination.paginatedData}
         columns={columns}
         idField="IDCLIENTE"
         onAdd={() => { setEditingItem(undefined); setIsFormOpen(true); }}
         onEdit={(item) => { setEditingItem(item); setIsFormOpen(true); }}
         onDelete={handleDelete}
       />
+
+      {data.length > 0 && (
+        <PaginationControls
+          currentPage={pagination.currentPage}
+          totalPages={pagination.totalPages}
+          totalItems={pagination.totalItems}
+          itemsPerPage={20}
+          onPrevPage={pagination.prevPage}
+          onNextPage={pagination.nextPage}
+          onGoToPage={pagination.goToPage}
+        />
+      )}
+
       {isFormOpen && (
         <CrudForm
-          title={editingItem ? "Modificar Cliente en Oracle" : "Sincronizar Nuevo Cliente"}
+          title={editingItem ? "Modificar Cliente en Oracle" : "Nuevo Cliente"}
           fields={fields}
           initialData={editingItem}
           onSubmit={handleSave}

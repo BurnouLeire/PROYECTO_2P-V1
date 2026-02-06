@@ -12,6 +12,7 @@ export class Proveedor {
   @Column({ name: 'DIR_PROVEEDOR', length: 200, nullable: true })
   DIR_PROVEEDOR: string;
 
-  @Column({ name: 'TEL_PROVEEDOR', type: 'number', precision: 15, nullable: true })
-  TEL_PROVEEDOR: number;
+  @Column({ name: 'TEL_PROVEEDOR', length: 15, nullable: true })
+TEL_PROVEEDOR: string;
+
 }

@@ -47,7 +47,7 @@ export default function Dashboard() {
     <div className="p-8 space-y-8 animate-in fade-in duration-500">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight">Dashboard Empresarial</h1>
+          <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight">Dashboard Sistema Gestion de Inventario</h1>
           <p className="text-slate-500">Monitor de operaciones - AIN_GRUPO13</p>
         </div>
         <div className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-bold ${status === 'online' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'}`}>

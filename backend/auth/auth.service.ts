@@ -1,10 +1,8 @@
-
 import { Injectable, UnauthorizedException, ConflictException, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { Usuario } from '../entities/usuario.entity';
 import * as bcrypt from 'bcrypt';
-import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class AuthService implements OnModuleInit {
@@ -22,36 +20,36 @@ export class AuthService implements OnModuleInit {
     console.log(`🛡️ Verificando integridad de tabla de seguridad: ${fullTableName}`);
 
     try {
-      // 1. Verificar si la tabla existe
       await this.dataSource.query(`SELECT 1 FROM ${fullTableName} WHERE ROWNUM = 1`);
     } catch (err) {
       if (err.message.includes('ORA-00942')) {
         console.log(`📝 Creando tabla ${fullTableName} desde cero...`);
         await this.dataSource.query(`
           CREATE TABLE ${fullTableName} (
-            "IDUSUARIO" VARCHAR2(36) PRIMARY KEY,
-            "USERNAME" VARCHAR2(100) UNIQUE NOT NULL,
+            "IDUSUARIO" NUMBER PRIMARY KEY,
+            "USERNAME" VARCHAR2(50) UNIQUE NOT NULL,
             "PASSWORD" VARCHAR2(255) NOT NULL,
+            "ROL" VARCHAR2(20),
             "ROLE" VARCHAR2(20) DEFAULT 'USER',
-            "ESTADO" VARCHAR2(20) DEFAULT 'ACTIVO',
+            "ESTADO" NUMBER DEFAULT 1,
             "NOTAS" VARCHAR2(500),
-            "FECHA_CREACION" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            "FECHA_CREACION" DATE DEFAULT SYSDATE
           )
         `);
       }
     }
 
-    // 2. Verificar y agregar columnas faltantes una por una (Fix para ORA-00904)
+    // Verificar y agregar columnas faltantes
     const columnsToFix = [
-      { name: 'ESTADO', type: 'VARCHAR2(20) DEFAULT \'ACTIVO\'' },
+      { name: 'ESTADO', type: 'NUMBER DEFAULT 1' },
       { name: 'NOTAS', type: 'VARCHAR2(500)' },
-      { name: 'FECHA_CREACION', type: 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP' },
-      { name: 'ROLE', type: 'VARCHAR2(20) DEFAULT \'USER\'' }
+      { name: 'FECHA_CREACION', type: 'DATE DEFAULT SYSDATE' },
+      { name: 'ROLE', type: 'VARCHAR2(20) DEFAULT \'USER\'' },
+      { name: 'ROL', type: 'VARCHAR2(20)' }
     ];
 
     for (const col of columnsToFix) {
       try {
-        // Verificamos si la columna existe en el diccionario de datos de Oracle
         const checkCol = await this.dataSource.query(`
           SELECT count(*) as "count" 
           FROM ALL_TAB_COLUMNS 
@@ -69,12 +67,12 @@ export class AuthService implements OnModuleInit {
       }
     }
 
-    // 3. Seed del administrador
+    // Seed del administrador
     try {
       const count = await this.userRepo.count();
       if (count === 0) {
         await this.seedAdmin();
-        console.log('✅ Usuario administrador "admin" creado.');
+        console.log('✅ Usuario administrador "ADMIN" creado.');
       }
     } catch (e) {
       console.error('❌ Error al verificar conteo de usuarios:', e.message);
@@ -83,10 +81,16 @@ export class AuthService implements OnModuleInit {
 
   async validateUser(username: string, pass: string) {
     try {
-      const users = await this.userRepo.find({ where: { USERNAME: username } });
+      if (!username || !pass) return null;
+      
+      const normalizedUsername = (username || '').toUpperCase().trim();
+      const users = await this.userRepo.find({ 
+        where: { USERNAME: normalizedUsername } 
+      });
+      
       const user = users[0];
-      if (user && await bcrypt.compare(pass, user.PASSWORD_HASH)) {
-        const { PASSWORD_HASH, ...result } = user;
+      if (user && await bcrypt.compare(pass, user.PASSWORD)) {
+        const { PASSWORD, ...result } = user;
         return result;
       }
     } catch (e) {
@@ -100,18 +104,45 @@ export class AuthService implements OnModuleInit {
   }
 
   async create(data: any) {
-    const users = await this.userRepo.find({ where: { USERNAME: data.username } });
-    if (users.length > 0) throw new ConflictException('Usuario ya existe');
+    // Validar datos requeridos
+    if (!data.USERNAME && !data.username) {
+      throw new ConflictException('El usuario es requerido');
+    }
+    if (!data.PASSWORD && !data.password) {
+      throw new ConflictException('La contraseña es requerida');
+    }
 
-    const hash = await bcrypt.hash(data.password, 10);
-    const user = this.userRepo.create({
-      ID: uuidv4(),
-      USERNAME: data.username,
-      PASSWORD_HASH: hash,
-      ROLE: data.role,
-      ESTADO: data.estado || 'ACTIVO',
-      NOTAS: data.notas || ''
+    // Normalizar a mayúsculas para consistencia con Oracle
+    const normalizedUsername = (data.USERNAME || data.username || '').toUpperCase().trim();
+    
+    const users = await this.userRepo.find({ 
+      where: { USERNAME: normalizedUsername } 
     });
+    
+    if (users.length > 0) {
+      throw new ConflictException(`Usuario "${normalizedUsername}" ya existe`);
+    }
+
+    const hash = await bcrypt.hash(data.PASSWORD || data.password, 10);
+    const role = (data.ROLE || data.role || 'USER').toUpperCase();
+    
+    // Convertir ESTADO a número (1 = ACTIVO, 0 = INACTIVO)
+    let estado = 1;
+    if (data.ESTADO) {
+      estado = data.ESTADO === 'INACTIVO' || data.ESTADO === '0' ? 0 : 1;
+    }
+
+    const user = this.userRepo.create({
+      // NO generar ID, Oracle lo genera automáticamente con la secuencia
+      USERNAME: normalizedUsername,
+      PASSWORD: hash,
+      ROL: role,
+      ROLE: role,
+      ESTADO: estado,
+      NOTAS: data.NOTAS || data.notas || '',
+      FECHA_CREACION: new Date()
+    });
+    
     return this.userRepo.save(user);
   }
 
@@ -122,12 +153,14 @@ export class AuthService implements OnModuleInit {
   async seedAdmin() {
     const hash = await bcrypt.hash('admin123', 10);
     const admin = this.userRepo.create({ 
-      ID: uuidv4(),
-      USERNAME: 'admin', 
-      PASSWORD_HASH: hash, 
+      // NO generar ID, Oracle lo genera
+      USERNAME: 'ADMIN',
+      PASSWORD: hash,
+      ROL: 'ADMIN',
       ROLE: 'ADMIN',
-      ESTADO: 'ACTIVO',
-      NOTAS: 'Administrador inicial maestro'
+      ESTADO: 1, // 1 = ACTIVO
+      NOTAS: 'Administrador inicial maestro',
+      FECHA_CREACION: new Date()
     });
     return this.userRepo.save(admin);
   }

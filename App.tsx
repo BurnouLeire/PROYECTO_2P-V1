@@ -55,7 +55,7 @@ const Navigation = ({ user, onLogout }: { user: User, onLogout: () => void }) =>
   return (
     <>
       <div className="lg:hidden flex items-center justify-between p-4 bg-indigo-700 text-white shadow-md sticky top-0 z-50">
-        <h1 className="text-xl font-bold tracking-tight">SincroERP</h1>
+        <h1 className="text-xl font-bold tracking-tight">SGI</h1>
         <button onClick={() => setIsOpen(!isOpen)}>
           {isOpen ? <X /> : <Menu />}
         </button>
@@ -67,7 +67,7 @@ const Navigation = ({ user, onLogout }: { user: User, onLogout: () => void }) =>
       `}>
         <div className="flex flex-col h-full">
           <div className="p-6 border-b border-slate-100 hidden lg:block">
-            <h1 className="text-2xl font-bold text-indigo-600 tracking-tight">SincroERP</h1>
+            <h1 className="text-2xl font-bold text-indigo-600 tracking-tight">SGI</h1>
             <p className="text-xs text-slate-400 mt-1 uppercase font-semibold">Sistema de Gestión v2.0</p>
           </div>
 

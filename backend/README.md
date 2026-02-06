@@ -11,6 +11,7 @@ Este proyecto está dividido en dos partes principales:
 
 ### Instrucciones de Ejecución Backend:
 1. Asegúrate de tener instalado el driver de Oracle (`oracledb`) en tu servidor.
+    importante aclaracion, el poreycto trabaja con Node 20 debido a que lo requiere la documentacion de Oracle y la ultima version del driver que provee oracle corectamente instalado en el entorno local
 2. Ejecuta `npm install` en la carpeta del backend.
 3. Ejecuta `npm run start:dev` para iniciar el servidor en el puerto 3000.
 

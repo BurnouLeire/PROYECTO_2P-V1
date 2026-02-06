@@ -35,7 +35,7 @@ export default function Login({ onLogin }: { onLogin: (u: User) => void }) {
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
           <div className="bg-indigo-600 p-8 text-white text-center">
-            <h2 className="text-3xl font-bold tracking-tight mb-2">SincroERP</h2>
+            <h2 className="text-3xl font-bold tracking-tight mb-2">SGI</h2>
             <p className="text-indigo-100 text-sm">Autenticación Centralizada Oracle G13</p>
           </div>
           

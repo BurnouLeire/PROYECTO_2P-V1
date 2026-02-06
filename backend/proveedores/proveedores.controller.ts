@@ -22,10 +22,18 @@ export class ProveedoresController {
     return this.repo.save(item);
   }
 
-  @Put(':id')
-  update(@Param('id') id: string, @Body() data: Partial<Proveedor>) {
-    return this.repo.update(id, data);
+@Put(':id')
+update(@Param('id') id: string, @Body() data: Partial<Proveedor>) {
+  if (!id) {
+    throw new Error('IDPROVEEDORES no enviado');
   }
+
+  return this.repo.update(
+    { IDPROVEEDORES: id },
+    data
+  );
+}
+
 
   @Delete(':id')
   remove(@Param('id') id: string) {

@@ -1,4 +1,3 @@
-
 import { Controller, Get, Post, Body, Put, Param, Delete } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -13,7 +12,8 @@ export class ProductosController {
 
   @Get()
   findAll() {
-    return this.repo.find({ relations: ['proveedor'] });
+    // SIN cargar relaciones por ahora
+    return this.repo.find();
   }
 
   @Post()
