@@ -37,7 +37,7 @@ Solución integral para la gestión de inventarios, desarrollada como proyecto a
 ### Backend
 1. Entrar a la carpeta: `cd backend`
 2. Instalar: `npm install`
-3. Ejecutar: `npm run start:dev`
+3. Ejecutar: `npm run start:all`
 
 ### Frontend
 1. En la raíz, instalar: `npm install`
